@@ -106,7 +106,7 @@ inline TStack<T>::TStack(int size, bool f, int top)
 	this->ind = top;
 	if (this->inReq) {
 		this->x = new T[size];
-		for (int i = 0; i < this->length; i = i + 1)
+		for (int i = 0; i < this->length; i++)
 			this->x[i] = 0;
 	}
 }
@@ -115,10 +115,10 @@ template <class T>
 TStack<T>::TStack(TStack<T>& _v)
 {
 	this->length = _v.length;
-	this->x = new T[this->length];
 	this->ind = _v.ind;
 	this->inReq = _v.inReq;
 	if (this->inReq) {
+		this->x = new T[this->length];
 		for (int i = 0; i < this->length; i = i + 1)
 			this->x[i] = _v.x[i];
 	}
@@ -154,7 +154,7 @@ TStack<T>& TStack<T>::operator=(const TStack<T>& _v)
 			this->x[i] = _v.x[i];
 	}
 	else {
-		this->x = _v.x;//////////////////////////////////////////////////////////////////
+		this->x = _v.x;
 	}
 	this->ind = _v.ind;
 	return *this;

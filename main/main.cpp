@@ -10,6 +10,7 @@ int main()
 	b.Push(1, 1);
 
 	b.Push(3, 1);
-	cout << b;
+	TMultiStack<int> c(b);
+	cout << b<<c;
   return 0;
 }

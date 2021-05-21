@@ -26,6 +26,7 @@ public:
 
 	TMultiStack<T>& operator =(const TMultiStack<T>& _v);
 	bool operator==(const TMultiStack<T>& _v) const;
+	bool operator!=(const TMultiStack<T>& _v) const;
 
 	void Push(T d, int i);
 	T Get(int i);
@@ -46,8 +47,7 @@ public:
 	int Length() const;
 	void Resize(int size = 1, int stackCount = 1);
 
-	T FindMin() const;
-	T FindMax() const;
+	int FindMin() const;
 };
 
 template <class T1>
@@ -77,9 +77,9 @@ istream& operator >> (istream& istr, TMultiStack<T1>& A) {
 template<class T1>
 ofstream& operator<<(ofstream& ostr, const TMultiStack<T1>& A)
 {
-	ostr << A.length << ' ' << A.ind << endl;
-	for (int i = 0; i < A.ind; i++)
-		ostr << A.x[i] << endl;
+	ostr << A.length << ' ' << A.sCount << endl;
+	for (int i = 0; i < A.sCount; i++)
+		ostr << A.stacks[i] << endl;
 	return ostr;
 }
 
@@ -88,12 +88,18 @@ ifstream& operator>>(ifstream& istr, TMultiStack<T1>& A)
 {
 	int count;
 	istr >> A.length >> count;
-	A.inReq = true;
+	A.sCount = count;
+	delete[] A.x;
+	delete[] A.pData;
+	delete[] A.stacks;
+	A.stacks = new TStack<T1>[count];
 	A.x = new T1[A.length];
+	A.pData = new T1 * [count];
+	int k = 0;
 	for (int i = 0; i < count; i++) {
-		T1 d;
-		istr >> d;
-		A.Push(d);
+		istr >> A.stacks[i];
+		A.pData[i] = &(A.x[0]) + k;
+		k += A.stacks[i].GetSize();
 	}
 	return istr;
 }
@@ -168,7 +174,7 @@ TMultiStack<T>::TMultiStack(int size, int stackCount)
 	for (int i = 0; i < this->length; i = i + 1)
 		this->x[i] = 0;
 
-	int count = int(round(double(size) / stackCount));
+	int count = size / stackCount;
 	int* sizes = new int[stackCount];
 	for (int i = 0; i < stackCount-1;i++) {
 		sizes[i] = count;
@@ -190,14 +196,14 @@ TMultiStack<T>::TMultiStack(TMultiStack<T>& _v)
 	this->length = _v.length;
 	this->x = new T[this->length];
 	this->sCount = _v.sCount;
-	for (int i = 0; i < this->length; i = i + 1)
+	for (int i = 0; i < this->length; i++)
 		this->x[i] = _v.x[i];
 	this->stacks = new TStack<T>[_v.sCount];
-	for (int i = 0; i < this->length; i = i + 1)
+	for (int i = 0; i < this->sCount; i++)
 		this->stacks[i] = _v.stacks[i];
 	this->pData = new T * [_v.sCount];
 	int k = 0;
-	for (int i = 0; i < this->length; i = i + 1) {
+	for (int i = 0; i < this->sCount; i++) {
 		this->pData[i] = &(this->x[k]);
 		k += this->stacks[i].GetSize();
 	}
@@ -214,7 +220,6 @@ TMultiStack<T>::~TMultiStack()
 	}
 	else throw - 1;
 	this->x = 0;
-	this->stacks = 0;
 }
 
 template<class T>
@@ -238,11 +243,17 @@ TMultiStack<T>& TMultiStack<T>::operator=(const TMultiStack<T>& _v)
 template<class T>
 inline bool TMultiStack<T>::operator==(const TMultiStack<T>& _v) const
 {
-	if (this->length != _v.length || this->ind != _v.ind) return false;
-	for (int i = 0; i < ind; i++)
-		if (this->x[i] != _v.x[i])
+	if (this->length != _v.length || this->sCount != _v.sCount) return false;
+	for (int i = 0; i < this->sCount; i++)
+		if (!(this->stacks[i] == _v.stacks[i]))
 			return false;
 	return true;
+}
+
+template<class T>
+bool TMultiStack<T>::operator!=(const TMultiStack<T>& _v) const
+{
+	return !(*this==_v);
 }
 
 
@@ -320,26 +331,15 @@ void TMultiStack<T>::Resize(int size, int stackCount)
 }
 
 template<class T>
-inline T TMultiStack<T>::FindMin() const
+int TMultiStack<T>::FindMin() const
 {
-	if (this->isEmpty()) throw - 1;
-	T min = this->x[0];
-	for (int i = 1; i < ind; i++)
-		if (this->x[i] < min)
-			min = this->x[i];
+	if (this->sCount == 0) throw - 1;
+	int min = this->stacks[0].Length();
+	for (int i = 1; i < this->sCount; i++) {
+		if (min > this->stacks[i].Length())
+			min = this->stacks[i].Length();
+	}
 	return min;
 }
-
-template<class T>
-inline T TMultiStack<T>::FindMax() const
-{
-	if (this->isEmpty()) throw - 1;
-	T max = this->x[0];
-	for (int i = 1; i < ind; i++)
-		if (this->x[i] > max)
-			max = this->x[i];
-	return max;
-}
-
 
 #endif

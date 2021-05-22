@@ -148,7 +148,7 @@ void TMultiStack<T>::RelocateStacks(int index)
 			k--;
 			for (int s = k; s >= i; s--) 
 			{
-				for (int j = this->stacks[k].Length()-1; j >= 0 ; j--) 
+				for (int j = sizes[s]-1; j >= 0 ; j--) 
 				{
 					newData[s][j] = this->pData[s][j];
 				}
@@ -205,6 +205,7 @@ TMultiStack<T>::TMultiStack(TMultiStack<T>& _v)
 	int k = 0;
 	for (int i = 0; i < this->sCount; i++) {
 		this->pData[i] = &(this->x[k]);
+		this->stacks[i].SetData(&(this->x[k]), _v.stacks[i].GetSize(), _v.stacks[i].Length());
 		k += this->stacks[i].GetSize();
 	}
 }
@@ -235,8 +236,12 @@ TMultiStack<T>& TMultiStack<T>::operator=(const TMultiStack<T>& _v)
 	this->x = new T[this->length];
 	for (int i = 0; i < this->length; i++)
 		this->x[i] = _v.x[i];
-	for (int i = 0; i < this->sCount; i++)
+	int k = 0;
+	for (int i = 0; i < this->sCount; i++) {
 		this->stacks[i] = _v.stacks[i];
+		this->stacks[i].SetData(&(this->x[k]), _v.stacks[i].GetSize(), _v.stacks[i].Length());
+		k += this->stacks[i].GetSize();
+	}
 	return *this;
 }
 
@@ -335,11 +340,14 @@ int TMultiStack<T>::FindMin() const
 {
 	if (this->sCount == 0) throw - 1;
 	int min = this->stacks[0].Length();
+	int imin = 0;
 	for (int i = 1; i < this->sCount; i++) {
-		if (min > this->stacks[i].Length())
+		if (min > this->stacks[i].Length()) {
 			min = this->stacks[i].Length();
+			imin = i;
+		}
 	}
-	return min;
+	return imin;
 }
 
 #endif
